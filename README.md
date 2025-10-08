@@ -1,2 +1,2 @@
 # The-Beer-Recognizer
-This REPO is about an machine learning code that will try to recognize if ur holding a beer, if ur drinking it, how full ur beer is. and wil give feedback on how ur drinking
+Het Beer Recognizer-project combineert machine learning, computer vision en embedded hardware om bierconsumptie te monitoren en interactief te begeleiden. Een vaste domecamera observeert continu het bureau, detecteert bierflessen en herkent drinkbewegingen. Het systeem schat hoeveel bier is gedronken en geeft meldingen zoals “Tijd voor een nieuwe bier!” of “Drink op, straks is het warm!”. Een servo-aangedreven “brandstofmeter” visualiseert de hoeveelheid bier, van Full tot Empty. Het project demonstreert een creatieve toepassing van beeldherkenning met fysieke feedback.
