@@ -98,8 +98,17 @@ Design Decisions
 - Named fuel states for clarity
 - Clean shutdown handling (LED off, PWM released)
 
+## Full assembly
+
+1. Print all parts in the 3mf file.
+2. Pull the servo in sideways making sure it goes through the posts and ends up horizontal aligned with the provided screwholes. The servo itself needs to be inbetween the numbergauge and the pillars to hold it.
+3. Once it is setup like this screw down using the sg90's included screws.
+4. Once this is done you will need to program the pico and make sure it is set to 50 percent for alignement of the gaugearrow.
+5. After this is done press down the gaugearrow over the servo and your done!
+
 Current Status
 --------------
+
 Servo control working
 Fuel gauge limits enforced
 Named and numeric commands supported
