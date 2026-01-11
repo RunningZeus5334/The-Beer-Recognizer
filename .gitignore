@@ -10,11 +10,15 @@ runs/               # Hier slaat YOLOv8 standaard trainingen en resultaten op
 *.engine            # TensorRT bestanden
 
 # Data & Datasets
-datasets/           # Als je je data in een lokale 'datasets' map hebt staan
+dataset/           # Als je je data in een lokale 'datasets' map hebt staan
 *.zip
 *.tar.gz
 *.rar
-
+*.jpg
+*.jpeg
+*.png
+*.txt
+*.cache
 # Persoonlijke mappen
 alfa-flesje/
 me-drinking/
@@ -33,3 +37,8 @@ venv312_linux/
 
 # Environment variabelen (voor API keys of paden)
 .env
+
+# models
+yolo11n.pt
+yolov8n.pt
+yolov8s.pt
