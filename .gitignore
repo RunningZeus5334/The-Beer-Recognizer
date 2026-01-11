@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# YOLOv8 / Ultralytics specifieke bestanden
+runs/               # Hier slaat YOLOv8 standaard trainingen en resultaten op
+*.pt                # Excludeert alle model weights (bijv. yolov8n.pt, best.pt, last.pt)
+*.onnx              # Geëxporteerde model formaten
+*.engine            # TensorRT bestanden
+
+# Data & Datasets
+datasets/           # Als je je data in een lokale 'datasets' map hebt staan
+*.zip
+*.tar.gz
+*.rar
+*.alfa-flesje
+*.me-drinking
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+venv312_linux/
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE instellingen
+.vscode/
+.idea/
+
+# Environment variabelen (voor API keys of paden)
+.env
