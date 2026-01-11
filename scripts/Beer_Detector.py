@@ -2,6 +2,10 @@ import cv2
 import time
 import torch
 from ultralytics import YOLO
+try:
+    import serial
+except Exception:
+    serial = None
 
 # --- CONFIGURATIE ---
 MODEL_PATH = 'runs/detect/train_long/run1/weights/best.pt'  # Pas dit aan naar het pad van jouw getrainde model
@@ -21,6 +25,62 @@ TARGET_FPS = 15
 BEER_CAPACITY_CL = 30
 CURRENT_LEVEL_PERCENT = 100.0
 DRINK_DECAY_RATE_PER_SEC = 5.0
+
+# --- Pico / Serial instellingen ---
+SERIAL_PORT = '/dev/ttyACM0'  # Pas aan indien nodig (/dev/ttyUSB0, etc.)
+SERIAL_BAUD = 115200
+SERIAL_TIMEOUT = 1.0
+
+class PicoController:
+    def __init__(self, port=SERIAL_PORT, baud=SERIAL_BAUD, timeout=SERIAL_TIMEOUT):
+        self.port = port
+        self.baud = baud
+        self.timeout = timeout
+        self.ser = None
+        self.open()
+
+    def open(self):
+        if serial is None:
+            print("pyserial niet beschikbaar; Pico aansturing uitgeschakeld.")
+            return
+        try:
+            self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout)
+            # wacht even zodat Pico REPL klaar is
+            time.sleep(1.0)
+            print(f"Verbonden met Pico op {self.port} @ {self.baud}")
+        except Exception as e:
+            print(f"Kon serial-poort niet openen ({self.port}): {e}")
+            self.ser = None
+
+    def send_angle(self, angle: float) -> bool:
+        """Stuur een numerieke hoek (als int) naar de Pico gevolgd door newline."""
+        if self.ser is None:
+            return False
+        try:
+            cmd = f"{int(round(angle))}\n"
+            self.ser.write(cmd.encode('utf-8'))
+            return True
+        except Exception as e:
+            print("Fout bij schrijven naar serial:", e)
+            try:
+                self.ser.close()
+            except Exception:
+                pass
+            self.ser = None
+            return False
+
+    def close(self):
+        if self.ser:
+            try:
+                self.ser.close()
+            except Exception:
+                pass
+            self.ser = None
+
+def percent_to_angle(percent: float) -> float:
+    # Map 0..100% to 0..180 degrees
+    p = max(0.0, min(100.0, float(percent)))
+    return (p / 100.0) * 180.0
 
 def calculate_intersection_ratio(box_a, box_b):
     x1_a, y1_a, x2_a, y2_a = box_a
@@ -49,6 +109,13 @@ def main():
     
     prev_time = time.time()
     frame_duration = 1.0 / TARGET_FPS
+
+    # Pico controller (serial)
+    pico = PicoController(SERIAL_PORT, SERIAL_BAUD, SERIAL_TIMEOUT)
+    last_sent_angle = None
+    last_send_time = 0.0
+    SEND_INTERVAL = 1.0  # minimaal 1s tussen sends
+    ANGLE_DELTA_THRESHOLD = 1.0  # stuur alleen bij >= 1 graad verschil
 
     print(f"Start detectie op max {TARGET_FPS} FPS. Druk op 'q' om te stoppen.")
 
@@ -118,6 +185,27 @@ def main():
                 CURRENT_LEVEL_PERCENT -= (DRINK_DECAY_RATE_PER_SEC * dt)
                 if CURRENT_LEVEL_PERCENT < 0: CURRENT_LEVEL_PERCENT = 0
 
+        # Stuur servo-hoek naar Pico gebaseerd op CURRENT_LEVEL_PERCENT
+        try:
+            desired_angle = percent_to_angle(CURRENT_LEVEL_PERCENT)
+            now_t = time.time()
+            need_send = False
+            if last_sent_angle is None:
+                need_send = True
+            elif abs(desired_angle - last_sent_angle) >= ANGLE_DELTA_THRESHOLD:
+                need_send = True
+            elif (now_t - last_send_time) >= SEND_INTERVAL:
+                need_send = True
+
+            if need_send:
+                sent = pico.send_angle(desired_angle)
+                if sent:
+                    last_sent_angle = desired_angle
+                    last_send_time = now_t
+        except Exception as e:
+            # bescherming zodat detectielus niet crasht bij serial fouten
+            print("Pico send error:", e)
+
         # UI Tekenen
         bar_h = 200
         fill_height = int((CURRENT_LEVEL_PERCENT / 100.0) * bar_h)
@@ -144,6 +232,10 @@ def main():
             time.sleep(wait_time)
 
     cap.release()
+    try:
+        pico.close()
+    except Exception:
+        pass
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
