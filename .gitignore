@@ -42,3 +42,4 @@ venv312_linux/
 yolo11n.pt
 yolov8n.pt
 yolov8s.pt
+!requirements.txt
