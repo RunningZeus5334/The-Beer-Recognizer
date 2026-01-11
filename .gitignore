@@ -14,8 +14,10 @@ datasets/           # Als je je data in een lokale 'datasets' map hebt staan
 *.zip
 *.tar.gz
 *.rar
-*.alfa-flesje
-*.me-drinking
+
+# Persoonlijke mappen
+alfa-flesje/
+me-drinking/
 # Virtual Environments
 venv/
 .venv/
